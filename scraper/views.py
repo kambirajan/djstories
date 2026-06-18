@@ -1,7 +1,7 @@
 from django.http import JsonResponse
 from .services.scraper import scrape_chapter
 
-
+@csrf_exempt
 def scrape_api(request):
     if request.method == "POST":
         url = request.POST.get("url")
