@@ -599,15 +599,53 @@
             showToast('Nothing to copy', 'error');
             return;
         }
-        navigator.clipboard.writeText(text).then(() => {
-            showToast('Copied to clipboard!', 'success');
-        }).catch(() => {
-            // Fallback
-            const ta = document.getElementById("output");
-            ta.select();
-            document.execCommand("copy");
-            showToast('Copied to clipboard!', 'success');
-        });
+        
+        // Try modern clipboard API first (requires HTTPS)
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Copied to clipboard!', 'success');
+            }).catch((err) => {
+                console.error('Clipboard API failed:', err);
+                fallbackCopyText(text);
+            });
+        } else {
+            // Fallback for HTTP or older browsers
+            fallbackCopyText(text);
+        }
+    }
+
+    function fallbackCopyText(text) {
+        // Create a temporary textarea element
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        
+        // Move it off-screen so it's not visible
+        textarea.style.position = 'fixed';
+        textarea.style.left = '-999999px';
+        textarea.style.top = '-999999px';
+        textarea.style.opacity = '0';
+        
+        document.body.appendChild(textarea);
+        
+        // Focus and select the text
+        textarea.focus();
+        textarea.select();
+        textarea.setSelectionRange(0, 99999); // For mobile devices
+        
+        try {
+            const successful = document.execCommand('copy');
+            if (successful) {
+                showToast('Copied to clipboard!', 'success');
+            } else {
+                showToast('Failed to copy. Please copy manually.', 'error');
+            }
+        } catch (err) {
+            console.error('Fallback copy failed:', err);
+            showToast('Failed to copy. Please copy manually.', 'error');
+        }
+        
+        // Clean up
+        document.body.removeChild(textarea);
     }
 
     function clearOutput() {
