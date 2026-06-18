@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Novel Scraper Pro</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #f5f7fb;
+            --bg-pattern: radial-gradient(circle at 1px 1px, rgba(99,102,241,0.08) 1px, transparent 0);
+            --card: #ffffff;
+            --card-border: rgba(0, 0, 0, 0.06);
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --input-bg: #f8fafc;
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --primary-glow: rgba(99, 102, 241, 0.4);
+            --success: #10b981;
+            --success-hover: #059669;
+            --danger: #ef4444;
+            --gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 20px 60px rgba(99, 102, 241, 0.15);
+        }
+
+        body.dark {
+            --bg: #0a0b14;
+            --bg-pattern: radial-gradient(circle at 1px 1px, rgba(99,102,241,0.15) 1px, transparent 0);
+            --card: #141620;
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border: #1e2130;
+            --input-bg: #0f1119;
+            --primary: #818cf8;
+            --primary-hover: #6366f1;
+            --primary-glow: rgba(129, 140, 248, 0.5);
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 20px 60px rgba(99, 102, 241, 0.25);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            background-image: var(--bg-pattern);
+            background-size: 24px 24px;
+            color: var(--text);
+            transition: background 0.3s ease, color 0.3s ease;
+            min-height: 100vh;
+            padding: 40px 20px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            background: var(--card);
+            border: 1px solid var(--card-border);
+            padding: 32px;
+            border-radius: 20px;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient);
+        }
+
+        /* Header */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 28px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .brand-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--gradient);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 8px 20px var(--primary-glow);
+        }
+
+        h1 {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-top: 2px;
+        }
+
+        /* Dark mode toggle */
+        .dark-btn {
+            background: var(--input-bg);
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 10px 16px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: inherit;
+        }
+
+        .dark-btn:hover {
+            border-color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        /* Input row */
+        .row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 16px;
+            pointer-events: none;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px 16px 14px 44px;
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            background: var(--input-bg);
+            color: var(--text);
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px var(--primary-glow);
+            background: var(--card);
+        }
+
+        input::placeholder {
+            color: var(--text-muted);
+        }
+
+        /* Buttons */
+        button {
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn {
+            background: var(--gradient);
+            color: white;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+            box-shadow: 0 4px 14px var(--primary-glow);
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px var(--primary-glow);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn .btn-icon {
+            font-size: 16px;
+        }
+
+        /* Status area */
+        .status-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 20px 0 12px;
+            min-height: 24px;
+        }
+
+        .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2.5px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            flex-shrink: 0;
+        }
+
+        .spinner.active {
+            display: block;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .status {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .status.success { color: var(--success); }
+        .status.error { color: var(--danger); }
+
+        /* Progress bar */
+        .progress {
+            height: 6px;
+            background: var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .bar {
+            height: 100%;
+            width: 0%;
+            background: var(--gradient);
+            border-radius: 10px;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .bar::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* Output section */
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .output-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .output-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            background: var(--input-bg);
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .icon-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .icon-btn.copy-btn {
+            background: var(--success);
+            color: white;
+            border-color: var(--success);
+        }
+
+        .icon-btn.copy-btn:hover {
+            background: var(--success-hover);
+            border-color: var(--success-hover);
+            color: white;
+        }
+
+        textarea {
+            width: 100%;
+            height: 450px;
+            border-radius: 14px;
+            border: 1.5px solid var(--border);
+            padding: 18px;
+            background: var(--input-bg);
+            color: var(--text);
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+            font-size: 14px;
+            line-height: 1.7;
+            resize: vertical;
+            transition: all 0.2s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px var(--primary-glow);
+        }
+
+        .output-footer {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--card);
+            color: var(--text);
+            padding: 14px 20px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success {
+            border-left: 4px solid var(--success);
+        }
+
+        .toast.error {
+            border-left: 4px solid var(--danger);
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            body { padding: 20px 12px; }
+            .container { padding: 20px; }
+            .top-bar { flex-direction: column; align-items: flex-start; gap: 16px; }
+            .row { flex-direction: column; }
+            .btn { justify-content: center; }
+            h1 { font-size: 20px; }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="top-bar">
+        <div class="brand">
+            <div class="brand-icon">📚</div>
+            <div>
+                <h1>Novel Scraper Pro</h1>
+                <div class="subtitle">Extract chapter content with a single click</div>
+            </div>
+        </div>
+
+        <button class="dark-btn" onclick="toggleDark()" id="themeBtn">
+            <span id="themeIcon">🌙</span>
+            <span id="themeText">Dark Mode</span>
+        </button>
+    </div>
+
+    <div class="row">
+        <div class="input-wrapper">
+            <span class="input-icon">🔗</span>
+            <input id="url" type="url" placeholder="Paste chapter URL here..." autocomplete="off">
+        </div>
+        <button class="btn" id="scrapeBtn" onclick="startScrape()">
+            <span class="btn-icon">⚡</span>
+            <span id="scrapeBtnText">Scrape</span>
+        </button>
+    </div>
+
+    <div class="status-area">
+        <div class="spinner" id="spinner"></div>
+        <div class="status" id="status">Ready to scrape</div>
+    </div>
+
+    <div class="progress">
+        <div class="bar" id="bar"></div>
+    </div>
+
+    <div class="output-header">
+        <span class="output-label">📄 Extracted Content</span>
+        <div class="output-actions">
+            <button class="icon-btn" onclick="clearOutput()">🗑️ Clear</button>
+            <button class="icon-btn copy-btn" onclick="copyText()">📋 Copy</button>
+        </div>
+    </div>
+
+    <textarea id="output" placeholder="Scraped content will appear here..."></textarea>
+
+    <div class="output-footer">
+        <span id="wordCount">0 words</span>
+        <span id="charCount">0 characters</span>
+    </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+    // Theme persistence
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark');
+        updateThemeUI(true);
+    }
+
+    function toggleDark() {
+        const isDark = document.body.classList.toggle('dark');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        updateThemeUI(isDark);
+    }
+
+    function updateThemeUI(isDark) {
+        document.getElementById('themeIcon').textContent = isDark ? '☀️' : '🌙';
+        document.getElementById('themeText').textContent = isDark ? 'Light Mode' : 'Dark Mode';
+    }
+
+    function setProgress(p) {
+        document.getElementById("bar").style.width = p + "%";
+    }
+
+    function setStatus(text, type = '') {
+        const status = document.getElementById("status");
+        status.textContent = text;
+        status.className = 'status ' + type;
+    }
+
+    function showToast(message, type = 'success') {
+        const toast = document.getElementById('toast');
+        const icon = type === 'success' ? '✅' : '❌';
+        toast.innerHTML = `<span>${icon}</span><span>${message}</span>`;
+        toast.className = `toast show ${type}`;
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    function setLoading(loading) {
+        const spinner = document.getElementById('spinner');
+        const btn = document.getElementById('scrapeBtn');
+        const btnText = document.getElementById('scrapeBtnText');
+
+        if (loading) {
+            spinner.classList.add('active');
+            btn.disabled = true;
+            btnText.textContent = 'Scraping...';
+        } else {
+            spinner.classList.remove('active');
+            btn.disabled = false;
+            btnText.textContent = 'Scrape';
+        }
+    }
+
+    function startScrape() {
+        const url = document.getElementById("url").value.trim();
+
+        if (!url) {
+            showToast('Please enter a URL', 'error');
+            return;
+        }
+
+        try {
+            new URL(url);
+        } catch {
+            showToast('Please enter a valid URL', 'error');
+            return;
+        }
+
+        setLoading(true);
+        setStatus("Connecting to server...", '');
+        setProgress(10);
+
+        fetch("/api/scrape/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-CSRFToken": getCookie("csrftoken")
+            },
+            body: "url=" + encodeURIComponent(url)
+        })
+        .then(res => res.json())
+        .then(data => {
+            setLoading(false);
+
+            if (data.success) {
+                setProgress(100);
+                setStatus("Scraping complete!", 'success');
+                document.getElementById("output").value = data.content;
+                updateCounts();
+                showToast('Content scraped successfully!', 'success');
+            } else {
+                setStatus("Error: " + data.error, 'error');
+                showToast(data.error || 'Scraping failed', 'error');
+            }
+        })
+        .catch(err => {
+            setLoading(false);
+            setStatus("Network error: " + err.message, 'error');
+            showToast('Network error occurred', 'error');
+        });
+    }
+
+    function copyText() {
+        const text = document.getElementById("output").value;
+        if (!text) {
+            showToast('Nothing to copy', 'error');
+            return;
+        }
+        navigator.clipboard.writeText(text).then(() => {
+            showToast('Copied to clipboard!', 'success');
+        }).catch(() => {
+            // Fallback
+            const ta = document.getElementById("output");
+            ta.select();
+            document.execCommand("copy");
+            showToast('Copied to clipboard!', 'success');
+        });
+    }
+
+    function clearOutput() {
+        document.getElementById("output").value = '';
+        setProgress(0);
+        setStatus('Ready to scrape', '');
+        updateCounts();
+    }
+
+    function updateCounts() {
+        const text = document.getElementById("output").value;
+        const chars = text.length;
+        const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+        document.getElementById("wordCount").textContent = `${words} word${words !== 1 ? 's' : ''}`;
+        document.getElementById("charCount").textContent = `${chars} character${chars !== 1 ? 's' : ''}`;
+    }
+
+    document.getElementById("output").addEventListener('input', updateCounts);
+
+    // Enter key to scrape
+    document.getElementById("url").addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') startScrape();
+    });
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+            const cookies = document.cookie.split(";");
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + "=")) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+
+</body>
+</html>
