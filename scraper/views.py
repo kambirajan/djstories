@@ -1,24 +1,30 @@
+import json
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from .services.scraper import scrape_chapter
+
 
 @csrf_exempt
 def scrape_api(request):
-    if request.method == "POST":
-        url = request.POST.get("url")
+    if request.method != "POST":
+        return JsonResponse({"error": "POST only"}, status=400)
 
-        try:
-            content = scrape_chapter(url)
+    try:
+        data = json.loads(request.body)
+        url = data.get("url")
 
-            return JsonResponse({
-                "success": True,
-                "content": content
-            })
+        content = scrape_chapter(url)
 
-        except Exception as e:
-            return JsonResponse({
-                "success": False,
-                "error": str(e)
-            })
+        return JsonResponse({
+            "success": True,
+            "content": content
+        })
+
+    except Exception as e:
+        return JsonResponse({
+            "success": False,
+            "error": str(e)
+        })
 
     return JsonResponse({
         "success": False,
